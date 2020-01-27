@@ -99,43 +99,47 @@ int main (void) {
  // Opening the device's file triggers new reading
  while(1) 
  {
-    int fd = open(devPath[i], O_RDONLY);
-    if(fd == -1)
-    {
-       perror ("Couldn't open the w1 device.");
-       return 1;
-    }
-    while((numRead = read(fd, buf, 256)) > 0) 
-    {
-       strncpy(tmpData, strstr(buf, "t=") + 2, 5);
-       float tempC = strtof(tmpData, NULL);
-       printf("Device: %s - ", dev[i]);
-       printf("Temp: %.3f C  ", tempC / 1000);
-       printf("%.3f F\n", (tempC / 1000) * 9 / 5 + 32);
+	while(i != devCnt)
+	{
+	
+		int fd = open(devPath[i], O_RDONLY);
+		if(fd == -1)
+		{
+		   perror ("Couldn't open the w1 device.");
+		   return 1;
+		}
+		while((numRead = read(fd, buf, 256)) > 0) 
+		{
+		   strncpy(tmpData, strstr(buf, "t=") + 2, 5);
+		   float tempC = strtof(tmpData, NULL);
+		   printf("Device: %s - ", dev[i]);
+		   printf("Temp: %.3f C  ", tempC / 1000);
+		   printf("%.3f F\n", (tempC / 1000) * 9 / 5 + 32);
 
-    }
-    close(fd);
-    i++;
-    if(i == devCnt) 
-    {
-       i = 0;
-       printf("%s\n", ""); // Blank line after each cycle
+		}
+		close(fd);
+		i++;
 
-    }
-    sleep(2);
-    if(read(file, data, 2) != 2)
-    {
-      printf("Error : Input/Output error \n");
-    }
-    else
-    {
-      // Convert the data
-      float luminance  = (data[0] * 256 + data[1]) / 1.20;
+	}
+	//Code pour la lecture du capteur de luminosité
+	if(read(file, data, 2) != 2)
+	{
+	  printf("Error : Input/Output error \n");
+	}
+	else
+	{
+		// Convert the data
+		float luminance  = (data[0] * 256 + data[1]) / 1.20;
 
-      // Output data to screen
-      printf("Ambient Light Luminance : %.2f lux\n", luminance);
-    }
-    sleep(5);
+		// Output data to screen
+		printf("Ambient Light Luminance : %.2f lux\n", luminance);
+	}
+	
+	sleep(5);
+	
+    i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
+	
+    printf("%s\n", ""); // Blank line after each cycle
   }
     return 0;
 }
