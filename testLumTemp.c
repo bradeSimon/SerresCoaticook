@@ -122,7 +122,7 @@ int main (void) {
        printf("%s\n", ""); // Blank line after each cycle
 
     }
-   
+    sleep(2);
     if(read(file, data, 2) != 2)
     {
       printf("Error : Input/Output error \n");
