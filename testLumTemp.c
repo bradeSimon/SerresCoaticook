@@ -12,68 +12,71 @@
 
 
 
-int main (void) {
- DIR *dir;
- struct dirent *dirent;
- char buf[256];     // Data from device
- char tmpData[5];   // Temp C * 1000 reported by device 
- const char path[] = "/sys/bus/w1/devices"; 
- ssize_t numRead;
- int i = 0;
- int devCnt = 0;
+int main (void) 
+{
+	DIR *dir;
+	struct dirent *dirent;
+	char buf[256];     // Data from device
+	char tmpData[5];   // Temp C * 1000 reported by device 
+	const char path[] = "/sys/bus/w1/devices"; 
+	ssize_t numRead;
+	int i = 0;
+	int devCnt = 0;
   
  
 
-        // 1st pass counts devices
-        dir = opendir (path);
-        if (dir != NULL)
-        {
-  while ((dirent = readdir (dir))) 
-  {
-                 // 1-wire devices are links beginning with 28-
-                        if (dirent->d_type == DT_LNK &&
-                                        strstr(dirent->d_name, "28-") != NULL) {
-                                i++;
-                        }
-                }
-                (void) closedir (dir);
-        }
-        else
-        {
-                perror ("Couldn't open the w1 devices directory");
-                return 1;
-        }
-        devCnt = i;
-        i = 0;
+	// 1st pass counts devices
+	dir = opendir (path);
+	if (dir != NULL)
+	{
+		while ((dirent = readdir (dir))) 
+		{
+			// 1-wire devices are links beginning with 28-
+			if (dirent->d_type == DT_LNK && strstr(dirent->d_name, "28-") != NULL) 
+			{
+				i++;
+			}
+		}
+		(void) closedir (dir);
+	}
+	else
+	{
+			perror ("Couldn't open the w1 devices directory");
+			return 1;
+	}
+	devCnt = i;
+	i = 0;
 
-        // 2nd pass allocates space for data based on device count
-        char dev[devCnt][16];
-        char devPath[devCnt][128];
- dir = opendir (path);
- if (dir != NULL)
- {
-    while ((dirent = readdir (dir))) 
-    {
-       // 1-wire devices are links beginning with 28-
-       if (dirent->d_type == DT_LNK && 
-         strstr(dirent->d_name, "28-") != NULL) 
-       { 
-          strcpy(dev[i], dirent->d_name);
-                 // Assemble path to OneWire device
-          sprintf(devPath[i], "%s/%s/w1_slave", path, dev[i]);
-          i++;
-        }
-     }
-  (void) closedir (dir);
-  }
- else
- {
-    perror ("Couldn't open the w1 devices directory");
-    return 1;
- }
- i = 0;
+	// 2nd pass allocates space for data based on device count
+	char dev[devCnt][16];
+	char devPath[devCnt][128];
+	float tabTemp[devCnt];
 
-  //Création du bus I2C pour le capteur de luminosité.
+	dir = opendir (path);
+	if (dir != NULL)
+	{
+		while ((dirent = readdir (dir))) 
+		{
+		// 1-wire devices are links beginning with 28-
+		if (dirent->d_type == DT_LNK && 
+			strstr(dirent->d_name, "28-") != NULL) 
+		{ 
+			strcpy(dev[i], dirent->d_name);
+					// Assemble path to OneWire device
+			sprintf(devPath[i], "%s/%s/w1_slave", path, dev[i]);
+			i++;
+			}
+		}
+	(void) closedir (dir);
+	}
+	else
+	{
+		perror ("Couldn't open the w1 devices directory");
+		return 1;
+	}
+	i = 0;
+
+  	//Création du bus I2C pour le capteur de luminosité.
  	// Create I2C bus
 	int file;
 	char *bus = "/dev/i2c-1";
@@ -112,14 +115,23 @@ int main (void) {
 		{
 		   strncpy(tmpData, strstr(buf, "t=") + 2, 5);
 		   float tempC = strtof(tmpData, NULL);
-		   printf("Device: %s - ", dev[i]);
-		   printf("Temp: %.3f C  ", tempC / 1000);
-		   printf("%.3f F\n", (tempC / 1000) * 9 / 5 + 32);
+		   tabTemp[i] = tempC/1000;
+		   //printf("Device: %s - ", dev[i]);
+		   //printf("Temp: %.3f C  ", tempC / 1000);
+		   //printf("%.3f F\n", (tempC / 1000) * 9 / 5 + 32);
 
 		}
 		close(fd);
 		i++;
+		
 
+	}
+	
+	//Boucle qui permet d'afficher d'un coup après que la boucle de lecture soit terminée.
+	for(int j=0;j<i;j++)
+	{
+		printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur
+		printf("Température: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
 	}
 	//Code pour la lecture du capteur de luminosité
 	if(read(file, data, 2) != 2)
@@ -135,8 +147,8 @@ int main (void) {
 		printf("Ambient Light Luminance : %.2f lux\n", luminance);
 	}
 	
-	sleep(5);
-	
+	sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note.
+	system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci.
     i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	
     printf("%s\n", ""); // Blank line after each cycle
