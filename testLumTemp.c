@@ -77,7 +77,6 @@ int main (void)
 	i = 0;
 
   	//Création du bus I2C pour le capteur de luminosité.
- 	// Create I2C bus
 	int file;
 	char *bus = "/dev/i2c-1";
 	if ((file = open(bus, O_RDWR)) < 0) 
@@ -102,9 +101,9 @@ int main (void)
  // Opening the device's file triggers new reading
  while(1) 
  {
+	 //Tant que nous n'avons pas lu tout les capteurs
 	while(i != devCnt)
 	{
-	
 		int fd = open(devPath[i], O_RDONLY);
 		if(fd == -1)
 		{
@@ -115,11 +114,7 @@ int main (void)
 		{
 		   strncpy(tmpData, strstr(buf, "t=") + 2, 5);
 		   float tempC = strtof(tmpData, NULL);
-		   tabTemp[i] = tempC/1000;
-		   //printf("Device: %s - ", dev[i]);
-		   //printf("Temp: %.3f C  ", tempC / 1000);
-		   //printf("%.3f F\n", (tempC / 1000) * 9 / 5 + 32);
-
+		   tabTemp[i] = tempC/1000; //On met la température du capteur dans le tableau désigné pour cela.
 		}
 		close(fd);
 		i++;
@@ -127,11 +122,12 @@ int main (void)
 
 	}
 	system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci.
-	//Boucle qui permet d'afficher d'un coup après que la boucle de lecture soit terminée.
+
+	//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée.
 	for(int j=0;j<i;j++)
 	{
 		printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur
-		printf("Température: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
+		printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
 	}
 	//Code pour la lecture du capteur de luminosité
 	if(read(file, data, 2) != 2)
@@ -149,8 +145,6 @@ int main (void)
 	
 	sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note.
     i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
-	
-    printf("%s\n", ""); // Blank line after each cycle
   }
     return 0;
 }
