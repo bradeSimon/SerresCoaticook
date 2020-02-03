@@ -126,7 +126,7 @@ int main (void)
 		
 
 	}
-	
+	system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci.
 	//Boucle qui permet d'afficher d'un coup après que la boucle de lecture soit terminée.
 	for(int j=0;j<i;j++)
 	{
@@ -148,7 +148,6 @@ int main (void)
 	}
 	
 	sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note.
-	system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci.
     i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	
     printf("%s\n", ""); // Blank line after each cycle
