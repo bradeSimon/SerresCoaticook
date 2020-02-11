@@ -1,4 +1,3 @@
-
 //Librairie de base pour les capteurs de températures DS18B20
 #include <stdio.h>
 #include <dirent.h>
