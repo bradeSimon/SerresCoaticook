@@ -26,18 +26,24 @@ int main (void)
 	int devCnt = 0;
 	char json[256];
 	float luminance = 0;//Pour le luxmètre
+	int nbEcriture = 0;
 
 	//Code pour le timestamp (Simon)
 	//Code trouvé ici : https://www.youtube.com/watch?v=zgmt8KoSRMw
 	time_t timeStamp;//create container to hold time value
 	time(&timeStamp);//fill timeStamp container by passing refernet to time() function
 
+	//test
+	/*char filename[40];
+	strftime(filename, sizeof(filename), "/var/log/SA_TEST_%m-%d_%H:%M",now);
+	fopen(filename,"w");
+	fclose (filename);*/
 	//Bloc de code à mettre au début du code. Efface le contenu de l'ancien .txt pour repartir à neuf.
     FILE * fp;
-    fp = fopen("/home/pi/Documents/testsProjetSerres/test.txt","w");
+    fp = fopen("/home/pi/Documents/projetSerres/dataCapteurs.txt","w");
     fprintf(fp, "");
+	fclose(fp);
 
- 
 
 	// 1st pass counts devices
 	dir = opendir (path);
@@ -142,14 +148,6 @@ int main (void)
 		system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci. (Simon)
 		printf(ctime(&timeStamp));//Affichage du timestamp (Simon)
 
-		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
-		for(int j=0;j<i;j++)
-		{
-			printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur
-			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
-		}
-
-		
 		//Code pour la lecture et l'affichage du capteur de luminosité
 		if(read(file, data, 2) != 2)
 		{
@@ -159,23 +157,32 @@ int main (void)
 		{
 			// Convert the data
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
-
-			// Output data to screen
-			printf("Ambient Light Luminance : %.2f lux\n", luminance);
 		}
-		//json[0] ="{ \\\"ID\\\":\\\"" /*+ "Allo" + "\\\", \\\"T\\\":\\\"" + "%.1f",tabTemp[i] + "\\\" }"*/;
 
-		/* open the file for writing*/
-		fp = fopen ("/home/pi/Documents/testsProjetSerres/test.txt","a");//Endroit où le .txt sera créé.
-		fprintf (fp, "{ \\\"ID\\\":\\\" %.1f\n", luminance);
-		//json = "\"" + json + "\"";
-		//json = json[] + "\r";
+		fp = fopen ("/home/pi/Documents/projetSerres/dataCapteurs.txt","a");//Endroit où le .txt sera créé.
+		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
+		for(int j=0;j<i;j++)
+		{
+			printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur
+			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
+
+			//Ligne de code permettant d'écrire l'information en format JSON (Simon)
+			fprintf (fp, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
+			
+			
+		}
+		//Écriture de la donnée du capteur de luminosité dans le fichier(Simon)
+		fprintf (fp, "Capteur de luminosité : %.2f lux\n", luminance);
+
+		// Output data to screen
+		printf("Ambient Light Luminance : %.2f lux\n", luminance);
 
 
 		/* close the file*/  
 		fclose (fp);
-
-		sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note. (Simon)
+		nbEcriture++;
+		printf("Nombre d'écriture dans le fichier : %d\n",nbEcriture);
+		sleep(5);//On arrête pendant 30 minutes secondes pour laisser le temps au client de prendre les données en note. (Simon)
 		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
 		return 0;
