@@ -9,6 +9,8 @@
 //Librairies ajoutées pour le capteur de luminosité BH1715
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
+//Librairie ajoutée pour le timestamp
+#include <time.h>
 
 
 
@@ -22,7 +24,12 @@ int main (void)
 	ssize_t numRead;
 	int i = 0;
 	int devCnt = 0;
-  
+
+	//Code pour le timestamp (Simon)
+	//Code trouvé ici : https://www.youtube.com/watch?v=zgmt8KoSRMw
+	time_t timeStamp;//create container to hold time value
+	time(&timeStamp);//fill timeStamp container by passing refernet to time() function
+
  
 
 	// 1st pass counts devices
@@ -121,15 +128,17 @@ int main (void)
 		
 
 	}
-	system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci.
+	system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci. (Simon)
+	printf(ctime(&timeStamp));//Affichage du timestamp (Simon)
 
-	//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée.
+	//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 	for(int j=0;j<i;j++)
 	{
 		printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur
 		printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
 	}
-	//Code pour la lecture du capteur de luminosité
+	
+	//Code pour la lecture et l'affichage du capteur de luminosité
 	if(read(file, data, 2) != 2)
 	{
 	  printf("Error : Input/Output error \n");
@@ -143,7 +152,7 @@ int main (void)
 		printf("Ambient Light Luminance : %.2f lux\n", luminance);
 	}
 	
-	sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note.
+	sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note. (Simon)
     i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
   }
     return 0;
