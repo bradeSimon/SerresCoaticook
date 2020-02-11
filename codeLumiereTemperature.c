@@ -24,11 +24,18 @@ int main (void)
 	ssize_t numRead;
 	int i = 0;
 	int devCnt = 0;
+	char json[256];
+	float luminance = 0;//Pour le luxmètre
 
 	//Code pour le timestamp (Simon)
 	//Code trouvé ici : https://www.youtube.com/watch?v=zgmt8KoSRMw
 	time_t timeStamp;//create container to hold time value
 	time(&timeStamp);//fill timeStamp container by passing refernet to time() function
+
+	//Bloc de code à mettre au début du code. Efface le contenu de l'ancien .txt pour repartir à neuf.
+    FILE * fp;
+    fp = fopen("/home/pi/Documents/testsProjetSerres/test.txt","w");
+    fprintf(fp, "");
 
  
 
@@ -104,56 +111,72 @@ int main (void)
   
 	char data[2]={0};//Tableau pour le MSB et le LSB de la luminosité.
   
-  // Read temp continuously
- // Opening the device's file triggers new reading
- while(1) 
- {
-	 //Tant que nous n'avons pas lu tout les capteurs
-	while(i != devCnt)
+	// Read temp continuously
+	// Opening the device's file triggers new reading
+	while(1) 
 	{
-		int fd = open(devPath[i], O_RDONLY);
-		if(fd == -1)
+		//Tant que nous n'avons pas lu tout les capteurs
+		while(i != devCnt)
 		{
-		   perror ("Couldn't open the w1 device.");
-		   return 1;
+			int fd = open(devPath[i], O_RDONLY);
+			if(fd == -1)
+			{
+			perror ("Couldn't open the w1 device.");
+			return 1;
+			}
+			while((numRead = read(fd, buf, 256)) > 0) 
+			{	
+				strncpy(tmpData, strstr(buf, "t=") + 2, 5);
+				float tempC = strtof(tmpData, NULL);
+				tabTemp[i] = tempC/1000; //On met la température du capteur dans le tableau désigné pour cela.
+
+
+			}
+
+
+			close(fd);
+			i++;
+			
+
 		}
-		while((numRead = read(fd, buf, 256)) > 0) 
+		system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci. (Simon)
+		printf(ctime(&timeStamp));//Affichage du timestamp (Simon)
+
+		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
+		for(int j=0;j<i;j++)
 		{
-		   strncpy(tmpData, strstr(buf, "t=") + 2, 5);
-		   float tempC = strtof(tmpData, NULL);
-		   tabTemp[i] = tempC/1000; //On met la température du capteur dans le tableau désigné pour cela.
+			printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur
+			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
 		}
-		close(fd);
-		i++;
+
 		
+		//Code pour la lecture et l'affichage du capteur de luminosité
+		if(read(file, data, 2) != 2)
+		{
+		printf("Error : Input/Output error \n");
+		}
+		else
+		{
+			// Convert the data
+			luminance  = (data[0] * 256 + data[1]) / 1.20;
 
-	}
-	system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci. (Simon)
-	printf(ctime(&timeStamp));//Affichage du timestamp (Simon)
+			// Output data to screen
+			printf("Ambient Light Luminance : %.2f lux\n", luminance);
+		}
+		//json[0] ="{ \\\"ID\\\":\\\"" /*+ "Allo" + "\\\", \\\"T\\\":\\\"" + "%.1f",tabTemp[i] + "\\\" }"*/;
 
-	//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
-	for(int j=0;j<i;j++)
-	{
-		printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur
-		printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur.
-	}
-	
-	//Code pour la lecture et l'affichage du capteur de luminosité
-	if(read(file, data, 2) != 2)
-	{
-	  printf("Error : Input/Output error \n");
-	}
-	else
-	{
-		// Convert the data
-		float luminance  = (data[0] * 256 + data[1]) / 1.20;
+		/* open the file for writing*/
+		fp = fopen ("/home/pi/Documents/testsProjetSerres/test.txt","a");//Endroit où le .txt sera créé.
+		fprintf (fp, "{ \\\"ID\\\":\\\" %.1f\n", luminance);
+		//json = "\"" + json + "\"";
+		//json = json[] + "\r";
 
-		// Output data to screen
-		printf("Ambient Light Luminance : %.2f lux\n", luminance);
+
+		/* close the file*/  
+		fclose (fp);
+
+		sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note. (Simon)
+		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
-	
-	sleep(5);//On arrête pendant 5 secondes pour laisser le temps au client de prendre les données en note. (Simon)
-    i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
-  }
-    return 0;
+		return 0;
 }
