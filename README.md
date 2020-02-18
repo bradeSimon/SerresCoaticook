@@ -7,6 +7,10 @@ Ce fichier est l'exemple du code utilisé pour la lecture des capteurs de tempé
 Ce fichier est le code utilisé par le Pi pour la lecture des différents capteurs. Pour l'instant, il y a que le code pour les capteurs de température ainsi que le capteur de luminosité.
 
 11-02-20 :
-Ajout du code pour le timestamp.
+Ajout du code pour le timestamp au début du programme.
+
+18-02-20 :
+-Ajout du code pour le timestamp à chaque capture de données et celui dans le titre du fichier texte à sa création.
+
 
 Les fichiers qui n'ont pas d'extension (.c /.md) sont des exécutables.
