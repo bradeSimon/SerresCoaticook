@@ -164,13 +164,6 @@ int main (void)
 
 		}
 
-		//Bout de code pour le transfert des données par Hologram.
-		
-
-		system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci. (Simon)
-		printf("Captures commencees le :  %s\n",ctime(&timeStamp));
-		//printf(ctime(&timeStamp));//Affichage du timestamp (Simon)
-
 		//Code pour la lecture et l'affichage du capteur de luminosité
 		if(read(file, data, 2) != 2)
 		{
@@ -182,28 +175,38 @@ int main (void)
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
 		}
 
-		fp = fopen (titleTxt,"a");//Endroit où le .txt a été créé.
+
 		
-		fprintf(fp,"TimeStamp : %s",ctime(&timeStampData));//Écriture du timeStamp que les données ont été prises.
+
 		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 		for(int j=0;j<devCnt;j++)
 		{
-			
-			printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur à l'écran
-			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur à l'écran
-
-			//Ligne de code permettant d'écrire l'information en format JSON (Simon)
-			fprintf (fp, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
-
-			snprintf(dataHologram[j],sizeof dataHologram, "sudo hologram send \"{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }\"", dev[j],tabTemp[j]);
-
-						
+			snprintf(dataHologram[j],sizeof dataHologram, "sudo hologram send \"{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }\"", dev[j],tabTemp[j]);				
 		}
 
 		//À mettre avant l'affichage car la commande affiche s'il a réussi ou non.
 		for(int j=0;j<devCnt;j++)
 		{
 			system(dataHologram[j]);
+			
+		}
+
+		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
+
+		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche à l'écran depuis quand le programme roule. (Simon)
+
+		fp = fopen (titleTxt,"a");//Ouverture du .txt
+		fprintf(fp,"TimeStamp : %s",ctime(&timeStampData));//Écriture du timeStamp que les données ont été prises.
+
+		//Pour chaque capteur présent, on écrit dans le fichier texte ainsi qu'à l'écran son numéro et la température.
+		for(int j=0;j<devCnt;j++)
+		{
+						
+			printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur à l'écran
+			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur à l'écran
+
+			//Ligne de code permettant d'écrire l'information en format JSON (Simon)
+			fprintf (fp, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
 		}
 
 		//Écriture de la donnée du capteur de luminosité dans le fichier(Simon)
