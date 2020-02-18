@@ -163,7 +163,7 @@ int main (void)
 
 		}
 		system("clear");//Ajout du clear de l'écran pour effacer tout ce qui a sur celui-ci. (Simon)
-		printf("Captures commencées le :  %s\n",ctime(&timeStamp));
+		printf("Captures commencees le :  %s\n",ctime(&timeStamp));
 		//printf(ctime(&timeStamp));//Affichage du timestamp (Simon)
 
 		//Code pour la lecture et l'affichage du capteur de luminosité
@@ -179,7 +179,7 @@ int main (void)
 
 		fp = fopen (titleTxt,"a");//Endroit où le .txt a été créé.
 		
-		fprintf(fp,"TimeStamp : %s\n",ctime(&timeStampData));//Écriture du timeStamp que les données ont été prises.
+		fprintf(fp,"TimeStamp : %s",ctime(&timeStampData));//Écriture du timeStamp que les données ont été prises.
 		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 		for(int j=0;j<i;j++)
 		{
@@ -192,15 +192,15 @@ int main (void)
 			
 		}
 		//Écriture de la donnée du capteur de luminosité dans le fichier(Simon)
-		fprintf (fp, "\nLuminosité : %.2f lux\n\n", luminance);
+		fprintf (fp, "Luminosité : %.2f lux\n\n", luminance);
 		// Output data to screen (Écriture de la donnée à l'écran)
-		printf("Luminosité ambiante : %.2f lux\n", luminance);
+		printf("Luminosite ambiante : %.2f lux\n", luminance);
 
 
 		/* close the file*/  
 		fclose (fp);
 		nbEcriture++;
-		printf("Nombre d'écriture dans le fichier : %d\n",nbEcriture);
+		printf("Nombre d'ecritures dans le fichier : %d\n",nbEcriture);
 		sleep(600);//On arrête pendant 10 minutes. (Simon)
 		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
