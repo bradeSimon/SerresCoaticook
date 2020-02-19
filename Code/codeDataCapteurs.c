@@ -41,12 +41,15 @@ int main (void)
 	float luminance = 0;//Pour le luxmètre
 	int nbEcriture = 0;
 
+	char dataHologram[devCnt][256];
+	char stringEnvoi[2056];
+
 	time_t timeStamp;//Initialisation du timestamp pour l'écriture au début du fichier.(Simon)
 	time(&timeStamp);
 	time_t timeStampData;//Initialisation du timeStamp pour l'écriture à chaque écriture dans le fichier.(Simon)
 	
-	SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
 	
+	//Variables pour le capteur d'humidité ambiante
 	int16_t i2c_temperature;
 	uint16_t i2c_humidity;
 	uint8_t err;
@@ -57,7 +60,7 @@ int main (void)
 	struct tm* local;
 	time_t t = time(NULL);
 	local = localtime(&t);
-	strftime(titleTxt, sizeof(titleTxt), "/home/pi/SerresCoaticook/dataCapteurs_%Y-%m-%d_%H:%M:%S.txt", local);//Création du fichier .txt avec la date de création.
+	strftime(titleTxt, sizeof(titleTxt), "/home/pi/SerresCoaticook/dataCapteurs_%Y-%m-%d_%H_%M_%S.txt", local);//Création du fichier .txt avec la date de création.
 
 	//Écriture de la première ligne dans le fichier .txt (Simon)
     FILE * fp;
@@ -65,6 +68,7 @@ int main (void)
 	fprintf(fp,"Date de commencement de capture des données : %s\n",ctime(&timeStamp));//Ajout de la date de création au fichier texte.
 	fclose(fp);
 
+	//SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
 
 	// 1st pass counts devices
 	dir = opendir (path);
@@ -93,8 +97,7 @@ int main (void)
 	char dev[devCnt][16];
 	char devPath[devCnt][128];
 	float tabTemp[devCnt];
-	char dataHologram[devCnt][256];
-	char stringEnvoi[2056];
+
 	dir = opendir (path);
 	if (dir != NULL)
 	{
@@ -148,7 +151,7 @@ int main (void)
 	// Opening the device's file triggers new reading
 	while(1) 
 	{
-		
+
 		time(&timeStampData);//Mise à jour du timeStamp
 		//char dateString[50];
 		//snprintf(dateString,sizeof dateString, "%.24s",timeStampData);//Changement de la date pour enlever le \n à la fin.
@@ -194,16 +197,16 @@ int main (void)
 		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) de 5 capteurs.
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4]);
 
-		//system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
-		printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
+		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
 		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
 		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) de 5 autres capteurs.
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send \"[%s, %s, %s, %s, %s]\"",dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8],dataHologram[devCnt+1]);
 		
-		//system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
-		printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
-		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
+		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
+		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
 		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche à l'écran depuis quand le programme roule. (Simon)
 
@@ -229,7 +232,9 @@ int main (void)
 		// Code pour la lecture du capteur d'humidité ambiante (Yannick)
 		//Début du code pour le capteur d'humidité ambiante
 		/* Read temperature and humidity from sensor */
-		err = SHT21_Read(&i2c_temperature, &i2c_humidity);
+
+		//Ce bout de code fait une segmentation fault, il va falloir règler ça Jeudi. (10-03-20)
+		/*err = SHT21_Read(&i2c_temperature, &i2c_humidity);
 	
 		if (SHT21_Cleanup() != 0)
 		{
@@ -239,21 +244,21 @@ int main (void)
 	
 		if (err == 0 )
 		{
-		printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //Affichage à l'écran de la donnée du capteur d'humidité
-		fprintf(fp, "Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //Écriture de la donnée du capteur d'humidité ambiante dans le fichier
+			printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //Affichage à l'écran de la donnée du capteur d'humidité
+			fprintf(fp, "Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //Écriture de la donnée du capteur d'humidité ambiante dans le fichier
 
 		}
 		else
 		{
-		printf("ERROR 0x%X reading sensor\n", err);
-		}
+			printf("ERROR 0x%X reading sensor\n", err);
+		}*/
 		//Fin du bloc de code pour le capteur d'humidité ambiante
 
 		/* close the file*/  
 		fclose (fp);
 		nbEcriture++;
 		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
-		sleep(2700);//On arrête pendant 45 minutes. (Simon)
+		sleep(10);//On arrête pendant 45 minutes. (Simon)
 		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
 	
