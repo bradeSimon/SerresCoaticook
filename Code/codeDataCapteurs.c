@@ -84,7 +84,9 @@ int main (void)
 	char dev[devCnt][16];
 	char devPath[devCnt][128];
 	float tabTemp[devCnt];
-	char dataHologram[devCnt][256];
+	char dataHologram[devCnt+3][256];
+	char stringData[devCnt][256];
+	char stringEnvoi[2056];
 
 	dir = opendir (path);
 	if (dir != NULL)
@@ -177,22 +179,29 @@ int main (void)
 		}
 
 
-		
+		for(int j=0;j<devCnt;j++)
+		{
+
+		}
 
 		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 		for(int j=0;j<devCnt;j++)
 		{
-			snprintf(dataHologram[j],sizeof dataHologram, "sudo hologram send \"{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }\"", dev[j],tabTemp[j]);				
+			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", dev[j],tabTemp[j]);				
 		}
+		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "Luminosite",luminance);
+		snprintf(dataHologram[devCnt+2],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"D\\\":\\\"%s\\\" }","Date",ctime(&timeStampData)); 
+		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s]\"",dataHologram[0],dataHologram[devCnt+1],dataHologram[devCnt+2]);
 
-		//À mettre avant l'affichage car la commande affiche s'il a réussi ou non.
-		for(int j=0;j<devCnt;j++)
+		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
+		/*for(int j=0;j<devCnt;j++)
 		{
 			system(dataHologram[j]);
 			
-		}
+		}*/
 
-		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
+		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
 		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche à l'écran depuis quand le programme roule. (Simon)
 
@@ -220,7 +229,7 @@ int main (void)
 		fclose (fp);
 		nbEcriture++;
 		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
-		sleep(600);//On arrête pendant 10 minutes. (Simon)
+		sleep(1800);//On arrête pendant 30 minutes. (Simon)
 		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
 	
