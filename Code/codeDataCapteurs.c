@@ -79,6 +79,7 @@ int main (void)
 	devCnt = i;
 	i = 0;
 
+
 	// 2nd pass allocates space for data based on device count
 	char dev[devCnt][16];
 	char devPath[devCnt][128];
