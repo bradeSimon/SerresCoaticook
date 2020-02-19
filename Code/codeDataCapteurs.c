@@ -185,7 +185,7 @@ int main (void)
 		}
 		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
 		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) toutes les données accumulées.
-		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8],dataHologram[devCnt+1],dataHologram[devCnt+2]);
+		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8],dataHologram[devCnt+1]);
 
 		
 		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
