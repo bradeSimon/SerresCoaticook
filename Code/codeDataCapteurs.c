@@ -48,7 +48,7 @@ int main (void)
 	struct tm* local;
 	time_t t = time(NULL);
 	local = localtime(&t);
-	strftime(titleTxt, sizeof(titleTxt), "/home/pi/Documents/projetSerres/dataCapteurs_%Y-%m-%d_%H:%M:%S.txt", local);//Création du fichier .txt avec la date de création.
+	strftime(titleTxt, sizeof(titleTxt), "/home/pi/SerresCoaticook/dataCapteurs_%Y-%m-%d_%H:%M:%S.txt", local);//Création du fichier .txt avec la date de création.
 
 	//Écriture de la première ligne dans le fichier .txt (Simon)
     FILE * fp;
@@ -178,30 +178,20 @@ int main (void)
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
 		}
 
-
-		for(int j=0;j<devCnt;j++)
-		{
-
-		}
-
 		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 		for(int j=0;j<devCnt;j++)
 		{
-			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", dev[j],tabTemp[j]);				
+			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", dev[j],tabTemp[j],ctime(&timeStampData));				
 		}
-		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "Luminosite",luminance);
-		snprintf(dataHologram[devCnt+2],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"D\\\":\\\"%s\\\" }","Date",ctime(&timeStampData)); 
-		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s]\"",dataHologram[0],dataHologram[devCnt+1],dataHologram[devCnt+2]);
+		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
+		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) toutes les données accumulées.
+		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8],dataHologram[devCnt+1],dataHologram[devCnt+2]);
 
+		
 		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
 		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
-		/*for(int j=0;j<devCnt;j++)
-		{
-			system(dataHologram[j]);
-			
-		}*/
 
-		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
+		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
 		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche à l'écran depuis quand le programme roule. (Simon)
 
