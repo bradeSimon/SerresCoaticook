@@ -19,8 +19,12 @@
 #include <sys/ioctl.h>
 //Librairie ajoutée pour le timestamp
 #include <time.h>
+//Librairie ajoutée pour le capteur d'humidit� 
+#include <stdint.h>
+#include "sht21.h"
 
-
+#define SDA_PIN 2
+#define SCL_PIN 3
 
 int main (void) 
 {
@@ -35,10 +39,20 @@ int main (void)
 	int devCnt = 0;
 	float luminance = 0;//Pour le luxmètre
 	int nbEcriture = 0;
+  uint16_t humidity;//Pour le capteur d'humidit�
 
 	time_t timeStamp;//Initialisation du timestamp pour l'écriture au début du fichier.(Simon)
 	time(&timeStamp);
-	time_t timeStampData;//Initialisation du timeStamp pour l'écriture à chaque écriture dans le fichier.(Simon)
+  time_t timeStampData;//Initialisation du timeStamp pour l'�criture � chaque �criture dans le fichier.(Simon)
+ 
+  //Initialisation du timeStamp pour l'écriture à chaque écriture dans le fichier.(Simon)
+  int16_t i2c_temperature;
+  uint16_t i2c_humidity;
+  uint8_t err;
+  
+  //Init the library 
+  SHT21_Init(SCL_PIN, SDA_PIN);
+ 
 	
 
 
@@ -55,6 +69,8 @@ int main (void)
     fp = fopen(titleTxt,"w");
 	fprintf(fp,"Date de commencement de capture des données : %s\n",ctime(&timeStamp));//Ajout de la date de création au fichier texte.
 	fclose(fp);
+ 
+ 
 
 
 	// 1st pass counts devices
@@ -138,7 +154,7 @@ int main (void)
 	while(1) 
 	{
 		//Tant que nous n'avons pas lu tout les capteurs
-		time(&timeStampData);//Mise à jour du timeStamp
+		time(&timeStampData);//Mise � jour du timeStamp
 		while(i != devCnt)
 		{
 			int fd = open(devPath[i], O_RDONLY);
@@ -151,7 +167,7 @@ int main (void)
 			{	
 				strncpy(tmpData, strstr(buf, "t=") + 2, 5);
 				float tempC = strtof(tmpData, NULL);
-				tabTemp[i] = tempC/1000; //On met la température du capteur dans le tableau désigné pour cela.
+				tabTemp[i] = tempC/1000; //On met la temp�rature du capteur dans le tableau d�sign� pour cela.
 
 
 			}
@@ -195,6 +211,26 @@ int main (void)
 		fprintf (fp, "Luminosité : %.2f lux\n\n", luminance);
 		// Output data to screen (Écriture de la donnée à l'écran)
 		printf("Luminosite ambiante : %.2f lux\n", luminance);
+   
+    // Code pour la lecture des capteurs d'humidit�
+    
+    /* Read temperature and humidity from sensor */
+    err = SHT21_Read(&i2c_temperature, &i2c_humidity);
+   
+    if (SHT21_Cleanup() != 0)
+    {
+      printf("ERROR during SHT cleanup\n");
+      return -1;
+    }
+   
+    if (err == 0 )
+    {
+      printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0);
+    }
+    else
+    {
+      printf("ERROR 0x%X reading sensor\n", err);
+    }
 
 
 		/* close the file*/  
