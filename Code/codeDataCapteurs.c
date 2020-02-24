@@ -94,7 +94,7 @@ int main (void)
 	char devPath[devCnt][128];
 	float tabTemp[devCnt];
 	char dataHologram[devCnt][256];
-
+	char stringEnvoi[2056];
 	dir = opendir (path);
 	if (dir != NULL)
 	{
@@ -192,14 +192,16 @@ int main (void)
 		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 		for(int j=0;j<devCnt;j++)
 		{
-			snprintf(dataHologram[j],sizeof dataHologram, "sudo hologram send \"{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }\"", dev[j],tabTemp[j]);				
+			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", dev[j],tabTemp[j]);				
 		}
 
 		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
 		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) toutes les données accumulées.
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8],dataHologram[devCnt+1]);
-
-		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
+	
+		//system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
+		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
 		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche à l'écran depuis quand le programme roule. (Simon)
 
