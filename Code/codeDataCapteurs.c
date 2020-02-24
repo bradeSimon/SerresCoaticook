@@ -57,7 +57,7 @@ int main (void)
 	struct tm* local;
 	time_t t = time(NULL);
 	local = localtime(&t);
-	strftime(titleTxt, sizeof(titleTxt), "/home/pi/Documents/projetSerres/dataCapteurs_%Y-%m-%d_%H:%M:%S.txt", local);//Création du fichier .txt avec la date de création.
+	strftime(titleTxt, sizeof(titleTxt), "/home/pi/SerresCoaticook/dataCapteurs_%Y-%m-%d_%H:%M:%S.txt", local);//Création du fichier .txt avec la date de création.
 
 	//Écriture de la première ligne dans le fichier .txt (Simon)
     FILE * fp;
@@ -192,10 +192,10 @@ int main (void)
 		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 		for(int j=0;j<devCnt;j++)
 		{
-			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", dev[j],tabTemp[j]);				
+			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", dev[j],tabTemp[j],ctime(&timeStampData));				
 		}
 
-		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
+		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
 		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) toutes les données accumulées.
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8],dataHologram[devCnt+1]);
 	
