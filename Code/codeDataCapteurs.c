@@ -93,7 +93,7 @@ int main (void)
 	char dev[devCnt][16];
 	char devPath[devCnt][128];
 	float tabTemp[devCnt];
-	char dataHologram[devCnt][256];
+	char dataHologram[devCnt + 2][256];
 	char stringEnvoi[2056];
 	dir = opendir (path);
 	if (dir != NULL)
@@ -175,7 +175,7 @@ int main (void)
 		}
 
 		//Code pour la lecture et l'affichage du capteur de luminosité
-		if(read(file, data, 2) != 2)
+		/*if(read(file, data, 2) != 2)
 		{
 		printf("Problème avec la lecture du capteur de luminosité \n");
 		}
@@ -183,7 +183,7 @@ int main (void)
 		{
 			// Convert the data
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
-		}
+		}*/
 
 
     
@@ -212,21 +212,22 @@ int main (void)
 		for(int j=0;j<devCnt;j++)
 		{
 						
-			printf("Device: %s - ", dev[j]);//Affichage du numéro du capteur à l'écran
+			printf("Device: %d - ", j + 1);//Affichage du numéro du capteur à l'écran
 			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la température reliée à ce capteur à l'écran
 
 			//Ligne de code permettant d'écrire l'information en format JSON (Simon)
 			fprintf (fp, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
 		}
 
-		//Écriture de la donnée du capteur de luminosité dans le fichier(Simon)
+		/*//Écriture de la donnée du capteur de luminosité dans le fichier(Simon)
 		fprintf (fp, "Luminosité : %.2f lux\n\n", luminance);
 		// Output data to screen (Écriture de la donnée à l'écran)
-		printf("Luminosite ambiante : %.2f lux\n", luminance);
+		printf("Luminosite ambiante : %.2f lux\n", luminance);*/
    
    // Code pour la lecture des capteurs d'humidit� (Yannick)
     //D�but
     /* Read temperature and humidity from sensor */
+    SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidit�
     err = SHT21_Read(&i2c_temperature, &i2c_humidity);
    
     if (SHT21_Cleanup() != 0)
@@ -250,7 +251,7 @@ int main (void)
 		fclose (fp);
 		nbEcriture++;
 		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
-		sleep(1800);//On arrête pendant 30 minutes. (Simon)
+		sleep(10);//On arrête pendant 30 minutes. (Simon)
 		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
 	
