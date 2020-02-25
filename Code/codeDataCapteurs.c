@@ -251,7 +251,7 @@ int main (void)
 		fclose (fp);
 		nbEcriture++;
 		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
-		sleep(10);//On arrête pendant 30 minutes. (Simon)
+		sleep(1800);//On arrête pendant 30 minutes. (Simon)
 		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
 	
