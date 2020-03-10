@@ -41,7 +41,7 @@ int main (void)
 	float luminance = 0;//Pour le luxmètre
 	int nbEcriture = 0;
 
-	char dataHologram[devCnt][256];
+	char dataHologram[devCnt+2][256];//Allocation en mémoire de l'espace necéssaire pour tout les capteurs.
 	char stringEnvoi[2056];
 
 	time_t timeStamp;//Initialisation du timestamp pour l'écriture au début du fichier.(Simon)
@@ -122,6 +122,7 @@ int main (void)
 	}
 	i = 0;
 
+	/*
 	//Début du bloc de code pour l'initialisation du capteur de luminosité I2C.
 
   	//Création du bus I2C pour le capteur de luminosité.
@@ -146,6 +147,7 @@ int main (void)
 	char data[2]={0};//Tableau pour le MSB et le LSB de la luminosité.
   
 	//Fin du bloc de code pour l'initialisation du capteur de luminosité I2C.
+	*/
 
 	// Read temp continuously
 	// Opening the device's file triggers new reading
@@ -153,8 +155,8 @@ int main (void)
 	{
 
 		time(&timeStampData);//Mise à jour du timeStamp
-		//char dateString[50];
-		//snprintf(dateString,sizeof dateString, "%.24s",timeStampData);//Changement de la date pour enlever le \n à la fin.
+		char dateString[500];
+		snprintf(dateString,sizeof dateString, "%.24s",ctime(&timeStampData));//Changement de la date pour enlever le \n à la fin.
 		//Tant que nous n'avons pas lu tout les capteurs
 		while(i != devCnt)
 		{
@@ -174,7 +176,7 @@ int main (void)
 			close(fd);
 			i++;
 		}
-
+		/*
 		//Code pour la lecture et l'affichage du capteur de luminosité
 		if(read(file, data, 2) != 2)
 		{
@@ -185,26 +187,26 @@ int main (void)
 			// Convert the data
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
 		}
+		*/
 
 		//Boucle qui permet d'afficher d'un coup les données des capteurs après que la boucle d'acquisition des données soit terminée. (Simon)
 		for(int j=0;j<devCnt;j++)
 		{
-
-			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", dev[j],tabTemp[j],ctime(&timeStampData));				
+			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", dev[j],tabTemp[j]);				
 		}
 
-		snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
+		//snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
 		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) de 5 capteurs.
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4]);
 
-		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		//system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
 		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
 		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
 		//Ligne de code qui permet de mettre dans le même tableau de char (string en c) de 5 autres capteurs.
-		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send \"[%s, %s, %s, %s, %s]\"",dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8],dataHologram[devCnt+1]);
+		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send \"[%s, %s, %s, %s]\"",dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8]);
 		
-		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		//system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
 		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
 		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
@@ -222,13 +224,14 @@ int main (void)
 			//Ligne de code permettant d'écrire l'information en format JSON (Simon)
 			fprintf (fp, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
 		}
-
+		/*
 		//Écriture de la donnée du capteur de luminosité dans le fichier (Simon)
 		fprintf (fp, "Luminosité : %.2f lux\n\n", luminance);
 
 		// Output data to screen (Écriture de la donnée à l'écran)
 		printf("Luminosite ambiante : %.2f lux\n", luminance);
-   
+		*/
+
 		// Code pour la lecture du capteur d'humidité ambiante (Yannick)
 		//Début du code pour le capteur d'humidité ambiante
 		/* Read temperature and humidity from sensor */
@@ -258,7 +261,7 @@ int main (void)
 		fclose (fp);
 		nbEcriture++;
 		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
-		sleep(10);//On arrête pendant 45 minutes. (Simon)
+		sleep(10);//On arrête pendant le nombre de secondes inscrit dans le sleep. (Simon)
 		i = 0;//Reset le compteur qui permet de voir combien de capteurs nous avons lus.
 	}
 	
