@@ -23,8 +23,8 @@
 #include <stdint.h>
 #include "sht21.h"
 //Define des PIN pour la lecture du capteur d'humidité
-#define SDA_PIN 2
-#define SCL_PIN 3
+#define SDA_PIN 14
+#define SCL_PIN 15
 void updateDateTime();
 
 int main (void) 
@@ -164,19 +164,35 @@ int main (void)
 				strncpy(tmpData, strstr(buf, "t=") + 2, 5);
 				float tempC = strtof(tmpData, NULL);
 				tabTemp[i] = tempC/1000; //On met la tempÃ©rature du capteur dans le tableau dÃ©signÃ© pour cela.
-
-
 			}
-
-
 			close(fd);
 			i++;
-			
-
 		}
+   
+   // Code pour la lecture des capteurs d'humidité (Yannick)
+    //Début
+    /* Read temperature and humidity from sensor */
+    SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
+    err = SHT21_Read(&i2c_temperature, &i2c_humidity);
+   
+    if (SHT21_Cleanup() != 0)
+    {
+      printf("ERROR during SHT cleanup\n");
+      return -1;
+    }
+   
+    if (err == 0 )
+    {
+      //printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //affichage de la lecture du capteur (Yannick)
+    }
+    else
+    {
+      printf("ERROR 0x%X reading sensor\n", err);
+    }
+    //Fin
 
 		//Code pour la lecture et l'affichage du capteur de luminositÃ©
-		/*if(read(file, data, 2) != 2)
+		if(read(file, data, 2) != 2)
 		{
 		printf("ProblÃ¨me avec la lecture du capteur de luminositÃ© \n");
 		}
@@ -184,7 +200,7 @@ int main (void)
 		{
 			// Convert the data
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
-		}*/
+		}
 
 
     
@@ -193,13 +209,13 @@ int main (void)
 		//Boucle qui permet d'afficher d'un coup les donnÃ©es des capteurs aprÃ¨s que la boucle d'acquisition des donnÃ©es soit terminÃ©e. (Simon)
 		/*for(int j=0;j<devCnt;j++)
 		{
-			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", dev[j],tabTemp[j],ctime(&timeStampData));				
+			snprintf(dataHologram[j],sizeof dataHologram, "{ \\\"T\\\":\\\"%.1f\\\", \\\"H\\\":\\\"%.1f\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }",tabTemp[j], (i2c_humidity/10.0), luminance,ctime(&timeStampData));				
 		}*/
 
 		//snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
 		//Ligne de code qui permet de mettre dans le mÃªme tableau de char (string en c) toutes les donnÃ©es accumulÃ©es.
    
-    snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "1",tabTemp[3]);	
+    /*snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "1",tabTemp[3]);	
     snprintf(dataHologram[1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "2",tabTemp[1]);
     snprintf(dataHologram[2],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "3",tabTemp[0]);
     snprintf(dataHologram[3],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "4",tabTemp[2]);
@@ -207,12 +223,17 @@ int main (void)
     snprintf(dataHologram[5],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "6",tabTemp[8]);
     snprintf(dataHologram[6],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "7",tabTemp[4]);
     snprintf(dataHologram[7],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "8",tabTemp[7]);
-    snprintf(dataHologram[8],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "9",tabTemp[5]);
+    snprintf(dataHologram[8],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "9",tabTemp[5]);*/
     //snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
     
-		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s,%s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8]);
+    snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"T1\\\":\\\"%.1f\\\", \\\"T2\\\":\\\"%.1f\\\", \\\"H\\\":\\\"%.1f\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }",tabTemp[0], tabTemp[0], (i2c_humidity/10.0), luminance,ctime(&timeStampData));	
+    
+		/*snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s,%s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8]);*/
+   
+   //snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "1",tabTemp[0]);
+   snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s]\"",dataHologram[0]);
 
-		//system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
 		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
 		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
@@ -229,18 +250,19 @@ int main (void)
 		fprintf(fp,"TimeStamp : %s",ctime(&timeStampData));//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
 
 		//Pour chaque capteur prÃ©sent, on Ã©crit dans le fichier texte ainsi qu'Ã  l'Ã©cran son numÃ©ro et la tempÃ©rature.
-		/*for(int j=0;j<devCnt;j++)
+		for(int j=0;j<devCnt;j++)
 		{
 						
-			printf("Device: %d - ", j + 1);//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+			//printf("Device: %d - ", j + 1);//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
 			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+      printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //affichage de la lecture du capteur (Yannick)
 
 			//Ligne de code permettant d'Ã©crire l'information en format JSON (Simon)
-			fprintf (fp, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
+			fprintf (fp, "{ \"T\":\"%.1f\", \"H\":\"%.1f\" }\n", tabTemp[j],i2c_humidity/10.0);
       
       
-		}*/
-    printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		}
+    /*printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
     printf("Temperature: %.1f C  \n", tabTemp[3]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
     fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[3]);
     
@@ -274,7 +296,7 @@ int main (void)
     
     printf("Device: 9 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
     printf("Temperature: %.1f C  \n", tabTemp[5]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-    fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[5]);
+    fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[5]);*/
    
 
 		/*//Ã‰criture de la donnÃ©e du capteur de luminositÃ© dans le fichier(Simon)
@@ -282,27 +304,7 @@ int main (void)
 		// Output data to screen (Ã‰criture de la donnÃ©e Ã  l'Ã©cran)
 		printf("Luminosite ambiante : %.2f lux\n", luminance);*/
    
-   // Code pour la lecture des capteurs d'humidité (Yannick)
-    //Début
-    /* Read temperature and humidity from sensor */
-    SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
-    err = SHT21_Read(&i2c_temperature, &i2c_humidity);
    
-    if (SHT21_Cleanup() != 0)
-    {
-      printf("ERROR during SHT cleanup\n");
-      return -1;
-    }
-   
-    if (err == 0 )
-    {
-      printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //affichage de la lecture du capteur (Yannick)
-    }
-    else
-    {
-      printf("ERROR 0x%X reading sensor\n", err);
-    }
-    //Fin
 
 
 		/* close the file*/  

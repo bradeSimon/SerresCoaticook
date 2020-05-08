@@ -1,0 +1,4 @@
+Date de commencement de capture des donnÃ©es : Tue May  5 13:23:53 2020
+
+TimeStamp : Tue May  5 13:23:54 2020
+{ "T":"20.2", "H":"38.5" }
