@@ -42,12 +42,12 @@ int main (void)
 	char data[2]={0};//Tableau pour le MSB et le LSB de la luminositÃ©.
 	int nbEcriture = 0;//Pour le nombre de fois que l'on ecrit dans le fichier .txt
 	
+	updateDateTime();//Fonction qui permet de mettre à jour le temps du Pi si jamais celui-ci est victime d'une panne de courant ou dbrancher pendant un certain temps.
 	time_t timeStamp;//Initialisation du timestamp pour l'Ã©criture au dÃ©but du fichier.(Simon)
 	time(&timeStamp);
 	time_t timeStampData;//Initialisation du timeStamp pour l'Ã©criture Ã  chaque Ã©criture dans le fichier.(Simon)
 	char stringEnvoi[2056];
 	
-	updateDateTime();//Fonction qui permet de mettre à jour le temps du Pi si jamais celui-ci est victime d'une panne de courant ou dbrancher pendant un certain temps.
   	SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
   
   	int16_t i2c_temperature;
@@ -63,10 +63,10 @@ int main (void)
 	strftime(titleTxt, sizeof(titleTxt), "/home/pi/SerresCoaticook/dataCapteurs_%Y-%m-%d_%H:%M:%S.txt", local);//CrÃ©ation du fichier .txt avec la date de crÃ©ation.
 
 	//Ã‰criture de la premiÃ¨re ligne dans le fichier .txt (Simon)
-    	FILE * fp;
-    	fp = fopen(titleTxt,"w");
-	fprintf(fp,"Date de commencement de capture des donnÃ©es : %s\n",ctime(&timeStamp));//Ajout de la date de crÃ©ation au fichier texte.
-	fclose(fp);
+	FILE * filep;
+    filep = fopen(titleTxt,"w");
+	fprintf(filep,"Date de commencement de capture des donnÃ©es : %s\n",ctime(&timeStamp));//Ajout de la date de crÃ©ation au fichier texte.
+	fclose(filep);
 
 	
 	//On compte le nombre de capteurs qu'il y a sur notre 1-wire
@@ -202,15 +202,15 @@ int main (void)
 		//snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
 		//Ligne de code qui permet de mettre dans le mÃªme tableau de char (string en c) toutes les donnÃ©es accumulÃ©es.
 	   	//Hardcode des données selon leur position sur la ligne dans la serre.
-	    	snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "1",tabTemp[3]);	
-	    	snprintf(dataHologram[1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "2",tabTemp[1]);
-	    	snprintf(dataHologram[2],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "3",tabTemp[0]);
-	    	snprintf(dataHologram[3],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "4",tabTemp[2]);
-	    	snprintf(dataHologram[4],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "5",tabTemp[6]);
-	    	snprintf(dataHologram[5],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "6",tabTemp[8]);
-    		snprintf(dataHologram[6],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "7",tabTemp[4]);
-	    	snprintf(dataHologram[7],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "8",tabTemp[7]);
-	    	snprintf(dataHologram[8],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "9",tabTemp[5]);
+		snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "1",tabTemp[3]);	
+		snprintf(dataHologram[1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "2",tabTemp[1]);
+		snprintf(dataHologram[2],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "3",tabTemp[0]);
+		snprintf(dataHologram[3],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "4",tabTemp[2]);
+		snprintf(dataHologram[4],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "5",tabTemp[6]);
+		snprintf(dataHologram[5],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "6",tabTemp[8]);
+		snprintf(dataHologram[6],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "7",tabTemp[4]);
+		snprintf(dataHologram[7],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "8",tabTemp[7]);
+		snprintf(dataHologram[8],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"T\\\":\\\"%.1f\\\" }", "9",tabTemp[5]);
 		//snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
     
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s, %s, %s, %s, %s,%s, %s, %s, %s]\"",dataHologram[0],dataHologram[1],dataHologram[2],dataHologram[3],dataHologram[4],dataHologram[5],dataHologram[6],dataHologram[7],dataHologram[8]);
@@ -228,8 +228,8 @@ int main (void)
 
 		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche Ã  l'Ã©cran depuis quand le programme roule. (Simon)
 
-		fp = fopen (titleTxt,"a");//Ouverture du .txt
-		fprintf(fp,"TimeStamp : %s",ctime(&timeStampData));//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
+		filep = fopen (titleTxt,"a");//Ouverture du .txt
+		fprintf(filep,"TimeStamp : %s",ctime(&timeStampData));//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
 
 		//Pour chaque capteur prÃ©sent, on Ã©crit dans le fichier texte ainsi qu'Ã  l'Ã©cran son numÃ©ro et la tempÃ©rature.
 		/*for(int j=0;j<devCnt;j++)
@@ -239,77 +239,77 @@ int main (void)
 			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
 
 			//Ligne de code permettant d'Ã©crire l'information en format JSON (Simon)
-			fprintf (fp, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
+			fprintf (filep, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
       
       
 		}*/
-	    	printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[3]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[3]);
+		printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[3]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[3]);
 
-	    	printf("Device: 2 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[1]);
+		printf("Device: 2 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[1]);
 
-	    	printf("Device: 3 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[0]);
+		printf("Device: 3 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[0]);
 
-	    	printf("Device: 4 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[2]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[2]);
+		printf("Device: 4 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[2]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[2]);
 
-	    	printf("Device: 5 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[6]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[6]);
+		printf("Device: 5 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[6]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[6]);
 
-	    	printf("Device: 6 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[8]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[8]);
+		printf("Device: 6 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[8]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[8]);
 
-	    	printf("Device: 7 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[4]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[4]);
+		printf("Device: 7 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[4]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[4]);
 
-	    	printf("Device: 8 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[7]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[7]);
+		printf("Device: 8 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[7]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[7]);
 
 		printf("Device: 9 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-	    	printf("Temperature: %.1f C  \n", tabTemp[5]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-	    	fprintf (fp, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[5]);
+		printf("Temperature: %.1f C  \n", tabTemp[5]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[5]);
 
 
 		/*//Ã‰criture de la donnÃ©e du capteur de luminositÃ© dans le fichier(Simon)
-		fprintf (fp, "LuminositÃ© : %.2f lux\n\n", luminance);
+		fprintf (filep, "LuminositÃ© : %.2f lux\n\n", luminance);
 		// Output data to screen (Ã‰criture de la donnÃ©e Ã  l'Ã©cran)
 		printf("Luminosite ambiante : %.2f lux\n", luminance);*/
    
 	   	// Code pour la lecture des capteurs d'humidité (Yannick)
-	    	//Début
-	    	/* Read temperature and humidity from sensor */
-	    	SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
-	    	err = SHT21_Read(&i2c_temperature, &i2c_humidity);
+		//Début
+		/* Read temperature and humidity from sensor */
+		SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
+		err = SHT21_Read(&i2c_temperature, &i2c_humidity);
 
-	    	if (SHT21_Cleanup() != 0)
-	    	{
-	      		printf("ERROR during SHT cleanup\n");
-	      		return -1;
-	    	}
+		if (SHT21_Cleanup() != 0)
+		{
+			printf("ERROR during SHT cleanup\n");
+			return -1;
+		}
 
-	    	if (err == 0 )
-	    	{
+		if (err == 0 )
+		{
 	      		printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //affichage de la lecture du capteur (Yannick)
 		}
-	    	else
-	    	{
-	      		printf("ERROR 0x%X reading sensor\n", err);
-	    	}
-	    	//Fin
+		else
+		{
+			printf("ERROR 0x%X reading sensor\n", err);
+		}
+		//Fin
 
 
 		/* close the file*/  
-		fclose (fp);//Fermeture du fichier dans lequel on écrit
+		fclose (filep);//Fermeture du fichier dans lequel on écrit
 		nbEcriture++;
 		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
 		sleep(900);//On arrÃªte pendant 15 minutes. (Simon)
