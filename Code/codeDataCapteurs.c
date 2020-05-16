@@ -217,54 +217,13 @@ int main (void)
 		filep = fopen (titleTxt,"a");//Ouverture du .txt
 		fprintf(filep,"TimeStamp : %s\n",tabDate);//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
 
-		//Pour chaque capteur prÃ©sent, on Ã©crit dans le fichier texte ainsi qu'Ã  l'Ã©cran son numÃ©ro et la tempÃ©rature.
-		/*for(int j=0;j<devCnt;j++)
-		{
-						
-			printf("Device: %d - ", j + 1);//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-			printf("Temperature: %.1f C  \n", tabTemp[j]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-
-			//Ligne de code permettant d'Ã©crire l'information en format JSON (Simon)
-			fprintf (filep, "{ \"ID\":\"%s\", \"T\":\"%.1f\" }\n", dev[j],tabTemp[j]);
-      
-      
-		}*/
 		printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
 		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
 		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[0]);
 
 		printf("Device: 2 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
 		printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"2\", \"T\":\"%.1f\" }\n",tabTemp[1]);/*
-
-		printf("Device: 3 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[0]);
-
-		printf("Device: 4 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[2]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[2]);
-
-		printf("Device: 5 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[6]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[6]);
-
-		printf("Device: 6 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[8]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[8]);
-
-		printf("Device: 7 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[4]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[4]);
-
-		printf("Device: 8 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[7]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[7]);
-
-		printf("Device: 9 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[5]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[5]);*/
-
+		fprintf (filep, "{ \"ID\":\"2\", \"T\":\"%.1f\" }\n",tabTemp[1]);
 
 		/*//Ã‰criture de la donnÃ©e du capteur de luminositÃ© dans le fichier(Simon)
 		fprintf (filep, "LuminositÃ© : %.2f lux\n\n", luminance);
