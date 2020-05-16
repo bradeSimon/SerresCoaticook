@@ -26,7 +26,11 @@
 #define SDA_PIN 2
 #define SCL_PIN 3
 void updateDateTime();
+void constructTimeStamp();
 
+time_t timeStampData;//Initialisation du timeStamp pour l'écriture à chaque écriture dans le fichier.(Simon) Variable globale.
+struct tm *info;
+char tabDate[30];
 int main (void) 
 {
 	DIR *dir;
@@ -45,7 +49,7 @@ int main (void)
 	updateDateTime();//Fonction qui permet de mettre à jour le temps du Pi si jamais celui-ci est victime d'une panne de courant ou dbrancher pendant un certain temps.
 	time_t timeStamp;//Initialisation du timestamp pour l'Ã©criture au dÃ©but du fichier.(Simon)
 	time(&timeStamp);
-	time_t timeStampData;//Initialisation du timeStamp pour l'Ã©criture Ã  chaque Ã©criture dans le fichier.(Simon)
+	
 	char stringEnvoi[2056];
 	
   	SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
@@ -152,7 +156,9 @@ int main (void)
 	while(1) 
 	{
 		
-		time(&timeStampData);//Mise Ã  jour du timeStamp
+		//time(&timeStampData);//Mise Ã  jour du timeStamp
+		constructTimeStamp();
+		
 		//Tant que nous n'avons pas lu tout les capteurs, on prends la température de chacun d'eux.
 		while(i != devCnt)
 		{
@@ -199,17 +205,17 @@ int main (void)
 		//snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
 		//Ligne de code qui permet de mettre dans le mÃªme tableau de char (string en c) toutes les donnÃ©es accumulÃ©es.
 		
-    	snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"T1\\\":\\\"%.1f\\\", \\\"T2\\\":\\\"%.1f\\\", \\\"H\\\":\\\"%.1f\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }",tabTemp[0], tabTemp[1], (i2c_humidity/10.0), luminance,ctime(&timeStampData));
+    	snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"T1\\\":\\\"%.1f\\\", \\\"T2\\\":\\\"%.1f\\\", \\\"H\\\":\\\"%.1f\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }",tabTemp[0], tabTemp[1], (i2c_humidity/10.0), luminance,tabDate);
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s]\"",dataHologram[0]);
 
-		//system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
-		printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
-		//system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
+		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
+		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
+		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
 
 		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche Ã  l'Ã©cran depuis quand le programme roule. (Simon)
 
 		filep = fopen (titleTxt,"a");//Ouverture du .txt
-		fprintf(filep,"TimeStamp : %s",ctime(&timeStampData));//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
+		fprintf(filep,"TimeStamp : %s\n",tabDate);//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
 
 		//Pour chaque capteur prÃ©sent, on Ã©crit dans le fichier texte ainsi qu'Ã  l'Ã©cran son numÃ©ro et la tempÃ©rature.
 		/*for(int j=0;j<devCnt;j++)
@@ -278,7 +284,7 @@ int main (void)
 		fclose (filep);//Fermeture du fichier dans lequel on écrit
 		nbEcriture++;
 		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
-		sleep(9);//On arrÃªte pendant 15 minutes. (Simon)
+		sleep(900);//On arrête pendant 15 minutes. (Simon)
 		i = 0;//Reset la variable qui permet de savoir combien de capteurs nous avons lus.
 	}
 	
@@ -286,7 +292,7 @@ int main (void)
 }
 /**
  * @brief  Fonction qui sert à mettre à jour la date et l'heure du Pi à l'aide du module LTE.
- */
+ **/
 void updateDateTime()
 {
 	FILE *fp;
@@ -350,4 +356,15 @@ void updateDateTime()
     
     //Envoi en ligne de commande du char*
     system(dateTime);
+}
+/**
+ * @brief  Fonction qui sert à utiliser le modèle dd/mm/yyyy hh:mm:ss pour le timestamp
+ **/
+void constructTimeStamp()
+{
+	time(&timeStampData);
+	info = localtime(&timeStampData);
+
+	strftime(tabDate,sizeof tabDate,"%d/%b/%Y %X",info);//Montage de la string par rapport aux informations du temps obtenu.
+
 }
