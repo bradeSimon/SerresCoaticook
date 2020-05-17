@@ -219,11 +219,11 @@ int main (void)
 
 		printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
 		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"1\", \"T\":\"%.1f\" }\n",tabTemp[0]);
+		fprintf (filep, "Température capteur 1 : %.1f\n",tabTemp[0]);
 
 		printf("Device: 2 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
 		printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
-		fprintf (filep, "{ \"ID\":\"2\", \"T\":\"%.1f\" }\n",tabTemp[1]);
+		fprintf (filep, "Température capteur 2 : %.1f\n",tabTemp[1]);
 
 		/*//Ã‰criture de la donnÃ©e du capteur de luminositÃ© dans le fichier(Simon)
 		fprintf (filep, "LuminositÃ© : %.2f lux\n\n", luminance);
@@ -233,7 +233,7 @@ int main (void)
    		if (err == 0 )
 		{
 	      		printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //affichage de la lecture du capteur (Yannick)
-				fprintf(filep,"Humidite ambiante = %.1f%%\n",i2c_humidity/10.0);
+				fprintf(filep,"Humidité ambiante = %.1f%%\n",i2c_humidity/10.0);
 		}
 		else
 		{
