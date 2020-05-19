@@ -2,9 +2,9 @@
  * @file   codeLumiereTemperature.cs
  * @author Simon Bradette & Yannick Bergeron-Chartier
  * @date   18-02-2020
- * @brief  CaractÃ©risation d'une serre
+ * @brief  Caractérisation d'une serre
  * @version 1.0 : PremiÃ¨re version
- * Environnement de dÃ©veloppement: Visual Studio Code
+ * Environnement de développement: Visual Studio Code
  */
 //Librairie de base pour les capteurs de tempÃ©ratures DS18B20
 #include <stdio.h>
@@ -17,9 +17,9 @@
 //Librairies ajoutÃ©es pour le capteur de luminositÃ© BH1715
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
-//Librairie ajoutÃ©e pour le timestamp
+//Librairie ajoutée pour le timestamp
 #include <time.h>
-//Librairie ajoutÃ©e pour le capteur d'humidité 
+//Librairie ajoutée pour le capteur d'humidité 
 #include <stdint.h>
 #include "sht21.h"
 //Define des PIN pour la lecture du capteur d'humidité
@@ -27,6 +27,7 @@
 #define SCL_PIN 3
 void updateDateTime();
 void constructTimeStamp();
+void effaceEcran();
 
 time_t timeStampData;//Initialisation du timeStamp pour l'écriture à chaque écriture dans le fichier.(Simon) Variable globale.
 struct tm *info;
@@ -43,10 +44,10 @@ int main (void)
 	int i = 0;
 	int devCnt = 0;
 	float luminance = 0;//Pour le luxmÃ¨tre
-	char data[2]={0};//Tableau pour le MSB et le LSB de la luminositÃ©.
+	char data[2]={0};//Tableau pour le MSB et le LSB de la luminosité.
 	int nbEcriture = 0;//Pour le nombre de fois que l'on ecrit dans le fichier .txt
 	
-	updateDateTime();//Fonction qui permet de mettre à jour le temps du Pi si jamais celui-ci est victime d'une panne de courant ou dbrancher pendant un certain temps.
+	updateDateTime();//Fonction qui permet de mettre à jour le temps du Pi si jamais celui-ci est victime d'une panne de courant ou est débranché pendant un certain temps.
 	time_t timeStamp;//Initialisation du timestamp pour l'Ã©criture au dÃ©but du fichier.(Simon)
 	time(&timeStamp);
 	
@@ -66,7 +67,7 @@ int main (void)
 	local = localtime(&t);
 	strftime(titleTxt, sizeof(titleTxt), "/home/pi/SerresCoaticook/dataCapteurs_%Y-%m-%d_%H:%M:%S.txt", local);//CrÃ©ation du fichier .txt avec la date de crÃ©ation.
 
-	//Ã‰criture de la premiÃ¨re ligne dans le fichier .txt (Simon)
+	//Écriture de la première ligne dans le fichier .txt (Simon)
 	FILE * filep;
     filep = fopen(titleTxt,"w");
 	fprintf(filep,"Date de commencement de capture des données : %s\n",ctime(&timeStamp));//Ajout de la date de crÃ©ation au fichier texte.
@@ -184,56 +185,50 @@ int main (void)
 
 		}
 
-		//Code pour la lecture et l'affichage du capteur de luminositÃ©
-		/*if(read(file, data, 2) != 2)
+		//Code pour la lecture et l'affichage du capteur de luminosité
+		if(read(file, data, 2) != 2)
 		{
-		printf("ProblÃ¨me avec la lecture du capteur de luminositÃ© \n");
+			printf("Probleme avec la lecture du capteur de luminosite \n");
 		}
 		else
 		{
 			// Convert the data
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
-		}*/
-
-	   	// Code pour la lecture des capteurs d'humidité (Yannick)
-		//Début
-		/* Read temperature and humidity from sensor */
-		err = SHT21_Read(&i2c_temperature, &i2c_humidity);
-
-
+		}
 		//Fin
-		//snprintf(dataHologram[devCnt+1],sizeof dataHologram, "{ \\\"ID\\\":\\\"%s\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }", "Luminosite",luminance,ctime(&timeStampData));
-		//Ligne de code qui permet de mettre dans le mÃªme tableau de char (string en c) toutes les donnÃ©es accumulÃ©es.
+		printf("%f",luminance);
+		// Code pour la lecture des capteurs d'humidité (Yannick)
+		err = SHT21_Read(&i2c_temperature, &i2c_humidity);
 		
     	snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"T1\\\":\\\"%.1f\\\", \\\"T2\\\":\\\"%.1f\\\", \\\"H\\\":\\\"%.1f\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }",tabTemp[0], tabTemp[1], (i2c_humidity/10.0), luminance,tabDate);
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s]\"",dataHologram[0]);
 
 		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
 		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
-		system("clear");//Ajout du clear pour effacer tout ce qui a sur l'écran. (Simon)
+		effaceEcran();//On efface l'écran pour faire place aux nouvelles données.
 
 		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche Ã  l'Ã©cran depuis quand le programme roule. (Simon)
 
-		filep = fopen (titleTxt,"a");//Ouverture du .txt
+		filep = fopen (titleTxt,"a");//Ouverture du .txt pour ajouter du texte
 		fprintf(filep,"TimeStamp : %s\n",tabDate);//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
 
-		printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'écran
+		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la température reliée Ã  ce capteur Ã  l'écran
 		fprintf (filep, "Température capteur 1 : %.1f\n",tabTemp[0]);
 
 		printf("Device: 2 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la tempÃ©rature reliÃ©e Ã  ce capteur Ã  l'Ã©cran
+		printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la température reliÃ©e Ã  ce capteur Ã  l'écran
 		fprintf (filep, "Température capteur 2 : %.1f\n",tabTemp[1]);
 
-		/*//Ã‰criture de la donnÃ©e du capteur de luminositÃ© dans le fichier(Simon)
-		fprintf (filep, "LuminositÃ© : %.2f lux\n\n", luminance);
-		// Output data to screen (Ã‰criture de la donnÃ©e Ã  l'Ã©cran)
-		printf("Luminosite ambiante : %.2f lux\n", luminance);*/
+		//Écriture de la donnée du capteur de luminosité dans le fichier(Simon)
+		fprintf (filep, "Luminosité : %.1f lux\n\n", luminance);
+		// Output data to screen (Écriture de la donnée Ã  l'écran)
+		printf("Luminosite ambiante : %.2f lux\n", luminance);
 
    		if (err == 0 )
 		{
 	      		printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //affichage de la lecture du capteur (Yannick)
-				fprintf(filep,"Humidité ambiante = %.1f%%\n",i2c_humidity/10.0);
+				fprintf(filep,"Humidité ambiante = %.1f%%\n\n",i2c_humidity/10.0);
 		}
 		else
 		{
@@ -261,8 +256,9 @@ void updateDateTime()
     char dateTime[50];
     char datebuff1[20];
     int heure;
+
     fp = popen("sudo hologram modem location", "r");//Permet d'effectuer la commande hologram modem location qui donne l'heure et la date exacte
-    while (fgets(var, sizeof(var), fp) != NULL) 
+	while (fgets(var, sizeof(var), fp) != NULL)//On met l'information reçue par la commande dans un tableau de char.
     {
     }
     pclose(fp);
@@ -317,13 +313,20 @@ void updateDateTime()
     system(dateTime);
 }
 /**
- * @brief  Fonction qui sert à utiliser le modèle dd/mm/yyyy hh:mm:ss pour le timestamp
+ * @brief  Fonction qui sert à utiliser le modèle dd/mm/yyyy hh:mm:ss pour le timestamp de QuickSight
  **/
 void constructTimeStamp()
 {
 	time(&timeStampData);
 	info = localtime(&timeStampData);
 
-	strftime(tabDate,sizeof tabDate,"%d/%b/%Y %X",info);//Montage de la string par rapport aux informations du temps obtenu.
+	strftime(tabDate,sizeof tabDate,"%d/%b/%Y %X\0",info);//Montage de la string par rapport aux informations du temps obtenu.
 
+}
+/**
+ * @brief  Fonction qui sert à effacer complètement le terminal qui se trouve sur l'écran du Pi.
+ **/
+void effaceEcran()
+{
+	system("clear");
 }
