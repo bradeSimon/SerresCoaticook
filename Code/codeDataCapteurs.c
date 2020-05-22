@@ -1,12 +1,12 @@
 /**
- * @file   codeLumiereTemperature.cs
+ * @file   codeDataCapteurs.cs
  * @author Simon Bradette & Yannick Bergeron-Chartier
  * @date   18-02-2020
  * @brief  Caractérisation d'une serre
- * @version 1.0 : PremiÃ¨re version
+ * @version 1.0 : Première version
  * Environnement de développement: Visual Studio Code
  */
-//Librairie de base pour les capteurs de tempÃ©ratures DS18B20
+//Librairie de base pour les capteurs de températures DS18B20
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-//Librairies ajoutÃ©es pour le capteur de luminositÃ© BH1715
+//Librairies ajoutées pour le capteur de luminosité BH1715
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 //Librairie ajoutée pour le timestamp
@@ -25,41 +25,45 @@
 //Define des PIN pour la lecture du capteur d'humidité
 #define SDA_PIN 2
 #define SCL_PIN 3
+
+//Déclaration des fonctions qui sont utilisées dans le code
 void updateDateTime();
 void constructTimeStamp();
 void effaceEcran();
 
-time_t timeStampData;//Initialisation du timeStamp pour l'écriture à chaque écriture dans le fichier.(Simon) Variable globale.
+time_t timeStampData;//Initialisation du timeStamp pour l'écriture de celle-ci dans le fichier.
 struct tm *info;
 char tabDate[30];
 int main (void) 
 {
 	DIR *dir;
 	struct dirent *dirent;
-	char buf[256];     // Data from device
-	char titleTxt[256];
-	char tmpData[5];   // Temp C * 1000 reported by device 
-	const char path[] = "/sys/bus/w1/devices"; 
+	char buf[256];// Buffer pour l'information reçue des capteurs de température.
+	char titleTxt[256];//Buffer pour le nom du fichier .txt qui est créé.
+	char tmpData[5];// Temp C * 1000 reported by device 
+	const char path[] = "/sys/bus/w1/devices";//Le path pour avoir accès aux capteurs de température 
 	ssize_t numRead;
 	int i = 0;
 	int devCnt = 0;
-	float luminance = 0;//Pour le luxmÃ¨tre
+	float luminance = 0;//Float pour la somme du MSB et LSB de la luminosité.
 	char data[2]={0};//Tableau pour le MSB et le LSB de la luminosité.
-	int nbEcriture = 0;//Pour le nombre de fois que l'on ecrit dans le fichier .txt
+	int nbEcriture = 0;//Pour le nombre de fois que l'on écrit dans le fichier .txt
+	int16_t i2c_temperature;
+  	uint16_t i2c_humidity;
+  	uint8_t err;
+	
 	
 	updateDateTime();//Fonction qui permet de mettre à jour le temps du Pi si jamais celui-ci est victime d'une panne de courant ou est débranché pendant un certain temps.
-	time_t timeStamp;//Initialisation du timestamp pour l'Ã©criture au dÃ©but du fichier.(Simon)
+	time_t timeStamp;//Initialisation du timestamp pour l'écriture au début du fichier.(Simon)
 	time(&timeStamp);
 	
 	char stringEnvoi[2056];
 	
   	SHT21_Init(SCL_PIN, SDA_PIN);//Initialisation pour le capteur d'humidité
   
-  	int16_t i2c_temperature;
-  	uint16_t i2c_humidity;
-  	uint8_t err;
 
-	//Code pour l'Ã©criture du nom du fichier (Simon)
+
+	//Code pour l'écriture du nom du fichier (Simon)
 	//Inspiration pour le bout de code :
 	//https://www.geeksforgeeks.org/time-h-localtime-function-in-c-with-examples/
 	struct tm* local;
@@ -69,8 +73,8 @@ int main (void)
 
 	//Écriture de la première ligne dans le fichier .txt (Simon)
 	FILE * filep;
-    filep = fopen(titleTxt,"w");
-	fprintf(filep,"Date de commencement de capture des données : %s\n",ctime(&timeStamp));//Ajout de la date de crÃ©ation au fichier texte.
+   	filep = fopen(titleTxt,"w");
+	fprintf(filep,"Date de commencement de capture des données : %s\n",ctime(&timeStamp));//Ajout de la date de création au fichier texte.
 	fclose(filep);
 
 	
@@ -97,8 +101,8 @@ int main (void)
 	devCnt = i;
 	i = 0;
 
-	//On alloue de l'espace en mémoire pour les capteurs selon le nombre de capteur que nous avons. C'est pourquoi on doit déclarer 
-	//l'espace mémoire ici et non au tout début du code.
+	/*On alloue de l'espace en mémoire pour les capteurs selon le nombre de capteur que nous avons. C'est pourquoi on doit déclarer 
+	l'espace mémoire ici et non au tout début du code.*/
 	// 2nd pass allocates space for data based on device count
 	char dev[devCnt][16];
 	char devPath[devCnt + 2][128];
@@ -129,9 +133,9 @@ int main (void)
 	}
 	i = 0;
 
-	//DÃ©but du bloc de code pour l'initialisation du capteur de luminositÃ© I2C.
+	//Début du bloc de code pour l'initialisation du capteur de luminosité I2C.
 
-  	//CrÃ©ation du bus I2C pour le capteur de luminositÃ©.
+  	//Création du bus I2C pour le capteur de luminosité.
 	int file;
 	char *bus = "/dev/i2c-1";
 	if ((file = open(bus, O_RDWR)) < 0) 
@@ -149,16 +153,13 @@ int main (void)
 	config[0] = 0x10;
 	write(file, config, 1); 
 	sleep(1);
-	
 	//Fin du bloc de code pour l'initialisation du capteur de luminositÃ© I2C.
 
 	// On lis les capteurs en boucle, à une intervalle décidée à la fin de la boucle (sleep)
-	// Opening the device's file triggers new reading
+	// Opening the device's file triggers new reading (Capteurs de température)
 	while(1) 
 	{
-		
-		//time(&timeStampData);//Mise Ã  jour du timeStamp
-		constructTimeStamp();
+		constructTimeStamp();//Mise à jour d'un marqueur de temps pour savoir quand les données ont été prises.
 		
 		//Tant que nous n'avons pas lu tout les capteurs, on prends la température de chacun d'eux.
 		while(i != devCnt)
@@ -173,7 +174,7 @@ int main (void)
 			{	
 				strncpy(tmpData, strstr(buf, "t=") + 2, 5);
 				float tempC = strtof(tmpData, NULL);
-				tabTemp[i] = tempC/1000; //On met la tempÃ©rature du capteur dans le tableau dÃ©signÃ© pour cela.
+				tabTemp[i] = tempC/1000; //On met la température du capteur dans le tableau désigné pour cela.
 
 
 			}
@@ -192,52 +193,50 @@ int main (void)
 		}
 		else
 		{
-			// Convert the data
+			//Conversion en lux du MSB et LSB reçus.
 			luminance  = (data[0] * 256 + data[1]) / 1.20;
 		}
 		//Fin
-		printf("%f",luminance);
 		// Code pour la lecture des capteurs d'humidité (Yannick)
 		err = SHT21_Read(&i2c_temperature, &i2c_humidity);
-		
+		//Longue ligne qui permet de monter la trame JSON qui sera envoyée sur Hologram.
     	snprintf(dataHologram[0],sizeof dataHologram, "{ \\\"T1\\\":\\\"%.1f\\\", \\\"T2\\\":\\\"%.1f\\\", \\\"H\\\":\\\"%.1f\\\", \\\"L\\\":\\\"%.1f\\\", \\\"Date\\\":\\\"%s\\\" }",tabTemp[0], tabTemp[1], (i2c_humidity/10.0), luminance,tabDate);
 		snprintf(stringEnvoi,sizeof stringEnvoi, "sudo hologram send  \"[%s]\"",dataHologram[0]);
 
-		system(stringEnvoi);//Envoi de la commande par le système (ligne de commande)
-		//printf(stringEnvoi);//Ligne pour debug la sortie de la string construite.
+		system(stringEnvoi);//Envoi de la commande par le système par ligne de commande.
 		effaceEcran();//On efface l'écran pour faire place aux nouvelles données.
 
-		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche Ã  l'Ã©cran depuis quand le programme roule. (Simon)
-
+		//Section pour l'écriture à l'écran LCD (Simon)
+		printf("Captures commencees le :  %s\n",ctime(&timeStamp));//Affiche à  l'écran depuis quand le programme roule. (Simon)
+		printf("Capteur: 1 - ");//Affichage du numéro du capteur à l'écran
+		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la température reliée à ce capteur à  l'écran
+		printf("Capteur: 2 - ");//Affichage du numéro du capteur à  l'écran
+		printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la température reliée à ce capteur à  l'écran
+		printf("Luminosite ambiante : %.2f lux\n", luminance);//Affichage de la luminosité à l'écran
+		
+		
+		//Section pour l'écriture dans le fichier .txt (Simon)
 		filep = fopen (titleTxt,"a");//Ouverture du .txt pour ajouter du texte
-		fprintf(filep,"TimeStamp : %s\n",tabDate);//Ã‰criture du timeStamp que les donnÃ©es ont Ã©tÃ© prises.
-
-		printf("Device: 1 - ");//Affichage du numÃ©ro du capteur Ã  l'écran
-		printf("Temperature: %.1f C  \n", tabTemp[0]);//Affichage de la température reliée Ã  ce capteur Ã  l'écran
-		fprintf (filep, "Température capteur 1 : %.1f\n",tabTemp[0]);
-
-		printf("Device: 2 - ");//Affichage du numÃ©ro du capteur Ã  l'Ã©cran
-		printf("Temperature: %.1f C  \n", tabTemp[1]);//Affichage de la température reliÃ©e Ã  ce capteur Ã  l'écran
-		fprintf (filep, "Température capteur 2 : %.1f\n",tabTemp[1]);
-
-		//Écriture de la donnée du capteur de luminosité dans le fichier(Simon)
-		fprintf (filep, "Luminosité : %.1f lux\n\n", luminance);
-		// Output data to screen (Écriture de la donnée Ã  l'écran)
-		printf("Luminosite ambiante : %.2f lux\n", luminance);
-
+		fprintf(filep,"TimeStamp : %s\n",tabDate);//Écriture dans le fichier .txt du timeStamp auquel les données ont été prises.
+		fprintf (filep, "Température capteur 1 : %.1f\n",tabTemp[0]);//Écriture dans le fichier .txt
+		fprintf (filep, "Température capteur 2 : %.1f\n",tabTemp[1]);//Écriture dans le fichier .txt
+		fprintf (filep, "Luminosité : %.1f lux\n\n", luminance);////Écriture de la donnée du capteur de luminosité dans le fichier.
+		
+		//Si la lecture du capteur d'humidité c'est bien passée, il écrira à l'écran et dans le fichier. Sinon il nous dira le type d'erreur.
    		if (err == 0 )
 		{
-	      		printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //affichage de la lecture du capteur (Yannick)
-				fprintf(filep,"Humidité ambiante = %.1f%%\n\n",i2c_humidity/10.0);
+	      	printf("Humidite ambiante = %.1f%%\n",i2c_humidity/10.0); //Affichage à l'écran de l'humidité ambiante.
+			fprintf(filep,"Humidité ambiante = %.1f%%\n\n",i2c_humidity/10.0);//Écriture de l'humidité dans le fichier .txt
 		}
 		else
 		{
 			printf("ERROR 0x%X reading sensor\n", err);
+			fprintf(filep,"Problème avec le capteur d'humidité\n\n");//Écriture dans le fichier .txt
 		}
 
 		fclose (filep);//Fermeture du fichier dans lequel on écrit
-		nbEcriture++;
-		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);
+		nbEcriture++;//Incrémentation du nombre de fois que nous avons écris dans le fichier.
+		printf("Nombre d'ecriture dans le fichier : %d\n",nbEcriture);//Affichage à l'écran du nombre de fois que nous avons écris dans le fichier.
 		sleep(900);//On arrête pendant 15 minutes. (Simon)
 		i = 0;//Reset la variable qui permet de savoir combien de capteurs nous avons lus.
 	}
@@ -249,7 +248,7 @@ int main (void)
  **/
 void updateDateTime()
 {
-	FILE *fp;
+    FILE *fp;
     char var[155];
     char subvarDate[10];
     char subvarTime[10];
@@ -297,7 +296,7 @@ void updateDateTime()
     {
         subvarTime[0] = '2';        
     }
-    else // Sinon, on ne fait que soustraire 4 au chiffre pour avoir la bonne heure.
+    else //Sinon, on ne fait que soustraire 4 au chiffre pour avoir la bonne heure.
     {
         heure = (subvarTime[0] - '0')*10;
         heure += (subvarTime[1]- '0');
